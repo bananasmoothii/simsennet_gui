@@ -333,7 +333,7 @@ export default defineComponent({
     min-width: 3rem;
     padding: 0.4375rem 0.875rem;
     transition: border-color 0.15s;
-    width: 100%;
+    width: 1rem;
 
     &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button {
@@ -356,7 +356,7 @@ export default defineComponent({
 
     & > input {
       display: inline-block;
-      width: 12.5rem;
+      width: 5rem;
     }
   }
 

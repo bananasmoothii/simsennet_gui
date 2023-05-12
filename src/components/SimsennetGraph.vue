@@ -4,9 +4,13 @@ import "v-network-graph/lib/style.css"
 import {computed, reactive, ref, watch} from "vue"
 import * as vNG from "v-network-graph"
 import {ForceLayout,ForceNodeDatum,ForceEdgeDatum} from "v-network-graph/lib/force-layout"
+import { EventHandlers } from "v-network-graph"
+import 'vue-neat-modal/dist/vue-neat-modal.css'
+import { Modal } from 'vue-neat-modal'
+
 const zoomLevel = ref(1.5)
 
-const configs = reactive(
+  const configs = reactive(
     vNG.defineConfigs({
       view: {
         layoutHandler: new ForceLayout({positionFixedByDrag: false, positionFixedByClickWithAltKey: true}),
@@ -20,32 +24,13 @@ const configs = reactive(
 export default {
   name: 'SimsennetGraph',
   components: {
-    VNetworkGraph
+    VNetworkGraph,
+    Modal
   },
   props:{
     graph: String
   },
   mounted () {
-    this.data["nodes"] = {
-        node1 : { name: "Node 1"},
-        node2 : { name: "Node 2"},
-        node3 : { name: "Node 3"},
-        node4 : { name: "Node 4"}
-      }
-      this.data["edges"] = {
-        edge1: { source: "node1", target: "node2"},
-        edge2: { source: "node2", target: "node3" },
-        edge3: { source: "node3", target: "node4" }
-      }
-      this.data["layouts"] = {
-        nodes: {
-          node1: {
-            x: 0,
-            y: 0,
-            fixed: true,
-          },
-        }
-      }
     this.get_node();
     this.timer = setInterval(this.get_node, 30000);
   },
@@ -58,6 +43,7 @@ export default {
       config: configs,
       zoomLevel: zoomLevel,
       timer: '',
+      displayGraph: false,
       url: 'http://ssngwtd.loria.fr/network-map.php',
       d3ForceEnabled: computed({
         get: () => configs.view.layoutHandler instanceof ForceLayout,
@@ -68,46 +54,37 @@ export default {
             configs.view.layoutHandler = new vNG.SimpleLayout()
           }
         },
-      })
+      }),
+      click_event: {
+        'node:click': ({ node }) => {
+          window.console.log(this.data["nodes"][node]["name"]);
+          this.displayGraph=true;
+        },
+      }
     }
   },
   methods: {
-    get_node() {
-      /*let request = new XMLHttpRequest();
+    get_node: function() {
+      let request = new XMLHttpRequest();
       request.open("GET", this.url, false);
-      request.onload = function () {
-        console.log(this.data)
-      };
       request.send();
       let jsonResult = JSON.parse(request.responseText);
-      this.data["nodes"] = reactive(jsonResult["nodes"])
-      this.data["edges"] = reactive(jsonResult["edges"])
+      this.data["nodes"] = reactive(jsonResult["nodes"]);
+      this.data["edges"] = reactive(jsonResult["edges"]);
       this.data["layouts"] = reactive(jsonResult["layouts"])
-      */
-      this.data["nodes"] = {
-        node1 : { name: "Node 1"},
-        node2 : { name: "Node 2"},
-        node3 : { name: "Node 3"},
-        node4 : { name: "Node 4"}
-      }
-      this.data["edges"] = {
-        edge1: { source: "node1", target: "node2"},
-        edge2: { source: "node2", target: "node3" },
-        edge3: { source: "node3", target: "node4" }
-      }
-      this.data["layouts"]["nodes"]["node1"]["fixed"] = true;
     }
   }
 }
+
 </script>
 
 <template>
-  
+  <Modal v-model="displayGraph" max-width="500px"></Modal>
   <div class="demo-control-panel">
     <label for="scaleObj">Scaling Objects:</label><input type="checkbox" v-model="config.view.scalingObjects" name="scaleObj"> |
     <label for="forceEnabled">Automatic Node Positioning:</label><input type="checkbox" v-model="d3ForceEnabled" name="forceEnabled">
   </div>
-  <v-network-graph class="graph" :nodes="data['nodes']" :edges="data['edges']" :layouts="data['layouts']" v-model:zoom-level="zoomLevel" :configs="config"></v-network-graph>
+  <v-network-graph class="graph" :event-handlers="click_event" :nodes="data['nodes']" :edges="data['edges']" :layouts="data['layouts']" v-model:zoom-level="zoomLevel" :configs="config"></v-network-graph>
 </template>
 
 <style scoped>

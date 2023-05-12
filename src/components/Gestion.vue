@@ -1,6 +1,7 @@
 <script lang="js">
 import Button from "@/components/Buttons/Button.vue"
 import VueNumberInput from "@/components/vue-number-input.vue"
+
 export default {
   name: 'Gestion-component',
   data(){
@@ -35,7 +36,8 @@ export default {
   },
   components:{
     VueNumberInput,
-    Button
+    Button,
+
   },
 }
 
@@ -54,6 +56,7 @@ export default {
   <div class="title">Paramètres du réseau :</div>
   <div id="container-freq">
     <div id="freq-input" >
+
     <vue-number-input id="vue-number-input" v-for="n in 10" :key="n" placeholder="Fréquence" v-model="value" :min="1" :max="Infinity" :size="large" :rounded="true" inline controls @update:model-value="onUpdate">
   </vue-number-input>
 </div>
@@ -83,7 +86,7 @@ export default {
       margin-left: 15px;
       margin-right: 15px;
       margin-bottom: 50px;
-      height: 0.5px;
+      height: 1px;
       border: none;
       background-color: black;
     }

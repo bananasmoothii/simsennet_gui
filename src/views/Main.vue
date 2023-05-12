@@ -3,7 +3,6 @@
     <div id="header"><Header></Header></div>
     <div id="topo"><SimsennetGraph></SimsennetGraph></div>
     <div id="option"><Gestion></Gestion></div>
-    <div id="graphic">test</div>
     <div id="footer"><Footer></Footer></div>
   </div>
 </template>
@@ -48,11 +47,7 @@ export default class Main extends Vue {}
   
 }
 #graphic{
-  border-top: black solid 1px;
-  grid-area: graphic;
-  padding: 1%;
-  margin-left: 1%;
-  justify-self: stretch;
+  display: block;
 }
 #footer{
   border-top: black 1px solid;
@@ -63,6 +58,7 @@ export default class Main extends Vue {}
 }
 #main-page {
   height: 90%;
+  width: 100%;
   display: grid;
   row-gap: 3%;
   column-gap: 3%;
@@ -71,7 +67,7 @@ export default class Main extends Vue {}
   grid-template-areas: 
     "header header header"
     "topo topo option"
-    "graphic graphic option"
+    "topo topo option"
     "footer footer footer";
 }
 
