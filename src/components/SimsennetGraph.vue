@@ -5,8 +5,7 @@ import {computed, reactive, ref, watch} from "vue"
 import * as vNG from "v-network-graph"
 import {ForceLayout,ForceNodeDatum,ForceEdgeDatum} from "v-network-graph/lib/force-layout"
 import { EventHandlers } from "v-network-graph"
-import 'vue-neat-modal/dist/vue-neat-modal.css'
-import { Modal } from 'vue-neat-modal'
+
 
 const zoomLevel = ref(1.5)
 
@@ -25,7 +24,7 @@ export default {
   name: 'SimsennetGraph',
   components: {
     VNetworkGraph,
-    Modal
+
   },
   props:{
     graph: String
@@ -43,6 +42,7 @@ export default {
       config: configs,
       zoomLevel: zoomLevel,
       timer: '',
+      node_name: '',
       displayGraph: false,
       url: 'http://ssngwtd.loria.fr/network-map.php',
       d3ForceEnabled: computed({
@@ -58,6 +58,7 @@ export default {
       click_event: {
         'node:click': ({ node }) => {
           window.console.log(this.data["nodes"][node]["name"]);
+          this.node_name = this.data["nodes"][node]["name"];
           this.displayGraph=true;
         },
       }
@@ -72,15 +73,15 @@ export default {
       this.data["nodes"] = reactive(jsonResult["nodes"]);
       this.data["edges"] = reactive(jsonResult["edges"]);
       this.data["layouts"] = reactive(jsonResult["layouts"])
-    }
+    },
   }
 }
 
 </script>
 
 <template>
-  <Modal v-model="displayGraph" max-width="500px"></Modal>
   <div class="demo-control-panel">
+    <div v-if="displayGraph">{{this.node_name}}</div>
     <label for="scaleObj">Scaling Objects:</label><input type="checkbox" v-model="config.view.scalingObjects" name="scaleObj"> |
     <label for="forceEnabled">Automatic Node Positioning:</label><input type="checkbox" v-model="d3ForceEnabled" name="forceEnabled">
   </div>
