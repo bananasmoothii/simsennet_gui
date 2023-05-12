@@ -1,4 +1,4 @@
-<script>
+<script lang="js">
 import { VNetworkGraph } from "v-network-graph"
 import "v-network-graph/lib/style.css"
 import {computed, reactive, ref, watch} from "vue"
