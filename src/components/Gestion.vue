@@ -1,42 +1,78 @@
 <script lang="js">
 import Button from "@/components/Buttons/Button.vue"
 import VueNumberInput from "@/components/vue-number-input.vue"
+import ModalPlanning from "@/components/ModalPlanning.vue"
 
 export default {
   name: 'Gestion-component',
+  provide(){
+    return {
+      provideDisplayPlanning: this.displayPlanning,
+    }
+  },
   data(){
     return {
-        label_button: "Pause",
+        global_freq: 'http://ssngwtd.loria.fr/get-global-freq.php',
+        download_results: 'http://ssngwtd.loria.fr/download.php',
+        reset: 'http://ssngwtd.loria.fr/reset.php',
         isRunning: true,
         value: "",
+        freq: "",
+        displayPlanning: {value: false},
     }
   },
   methods: {
-        test: function(){
-          return 0
+        download: function(){
+          window.open(this.download_results, '_self');
+          
+        },
+        reset_func: function(){
+          let request = new XMLHttpRequest();
+          request.open("GET", this.reset, false);
+          request.send();
         },
         button_action: function(){
-            if(this.isRunning){
-                /*appel async pause*/
-                this.isRunning=false;
-                this.label_button="Reprendre";
-            }
-            else{
-                /*appel async run*/
-                this.isRunning=true;
-                this.label_button="Pause";
-            }
+            this.isRunning=!this.isRunning;
+        },
+        edit: function(){
+            this.displayPlanning.value = true;
         },
         onUpdate: function(newValue, oldValue) {
           if(isNaN(newValue))
           {
-            this.value=oldValue
+            this.value=oldValue;
           }
+        },
+        get_global_freq: function(){
+          let request = new XMLHttpRequest();
+          request.open("GET", this.global_freq, false);
+          request.send();
+          this.freq = parseInt(request.responseText);
+          console.log(this.freq)
         }
+  },
+  computed: {
+    label_button:{
+      get(){
+        return this.isRunning ? "Reprendre": "Pause";
+      }
+    }
+  },
+  mounted(){
+    this.get_global_freq();
+
+    if(this.freq === 0){
+      this.isRunning=false;
+    }
+    else{
+      this.isRunning=true;
+    }
+
   },
   components:{
     VueNumberInput,
     Button,
+    ModalPlanning,
 
   },
 }
@@ -46,28 +82,56 @@ export default {
 
 <template>
 <div id="Gestion-container">
-  <div class="title">Gestion du réseau :</div>
+  <div class="title">Contrôles :</div>
   <div id="buttons">
-    <Button :color="'#8dba8a'" :func="this.test" :text="'Télécharger'"></Button>
+    <Button :color="'#8dba8a'" :func="this.download" :text="'Télécharger'"></Button>
     <Button :color="'#8d90eb'" :func="button_action" :text="this.label_button"></Button>
-    <Button :color="'#cf6d71'" :func="this.test" :text="'Arrêter'"></Button>
+    <Button :color="'#cf6d71'" :func="reset_func" :text="'Arrêter'"></Button>
   </div>
   <hr/>
-  <div class="title">Paramètres du réseau :</div>
-  <div id="container-freq">
-    <div id="freq-input" >
-
-    <vue-number-input id="vue-number-input" v-for="n in 10" :key="n" placeholder="Fréquence" v-model="value" :min="1" :max="Infinity" :size="large" :rounded="true" inline controls @update:model-value="onUpdate">
-  </vue-number-input>
-</div>
-</div>
+  <ModalPlanning></ModalPlanning>
+  <div id="planning">
+    <div class="title">Plannification :</div>
+    <div id="edit_button" v-on:click="edit">
+      <img id="edit_ico" src="@/assets/edit.png"/>
+    </div>
+    <div id="container-freq">
+      <div id="freq-input" >
+        <vue-number-input id="vue-number-input" v-model="freq" :placeholder="'Fréquence'" :min="0" :max="Infinity" :rounded="true" inline controls readonly @update:model-value="onUpdate"></vue-number-input>
+      </div>
+    </div>
+  </div>
 </div>
 
 </template>
 
 <style lang="scss" scoped>
+    #edit_ico{
+      color: white;
+      height: 30px;
+      width: auto;
+      object-fit: cover;
+    }
+    #edit_button{
+      position: absolute;
+      line-height: 0px;
+      top:0px;
+      right:45px;
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      padding: 5px;
+    }
+    #edit_button:hover{
+      background-color: rgba($color: #000000, $alpha: 0.1);
+      cursor: pointer;
+    }
+    #planning{
+      position: relative;
+      height: 100%;
+    }
     #container-freq{
-      height: 300px;
+      height: 400px;
       width: auto;
       overflow-y: auto;  
     }
@@ -82,10 +146,10 @@ export default {
     }
 
     hr{
-      margin-top: 50px;
+      margin-top: 30px;
       margin-left: 15px;
       margin-right: 15px;
-      margin-bottom: 50px;
+      margin-bottom: 30px;
       height: 1px;
       border: none;
       background-color: black;

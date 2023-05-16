@@ -5,6 +5,7 @@ import {computed, reactive, ref, watch} from "vue"
 import * as vNG from "v-network-graph"
 import {ForceLayout,ForceNodeDatum,ForceEdgeDatum} from "v-network-graph/lib/force-layout"
 import { EventHandlers } from "v-network-graph"
+import ModalGraph from "@/components/ModalGraph.vue"
 
 
 const zoomLevel = ref(1.5)
@@ -24,7 +25,13 @@ export default {
   name: 'SimsennetGraph',
   components: {
     VNetworkGraph,
+    ModalGraph,
 
+  },
+  provide(){
+    return {
+      provideDisplayGraph: this.displayGraph
+    }
   },
   props:{
     graph: String
@@ -42,8 +49,9 @@ export default {
       config: configs,
       zoomLevel: zoomLevel,
       timer: '',
+      isValid: false,
       node_name: '',
-      displayGraph: false,
+      displayGraph: {value: false},
       url: 'http://ssngwtd.loria.fr/network-map.php',
       d3ForceEnabled: computed({
         get: () => configs.view.layoutHandler instanceof ForceLayout,
@@ -59,7 +67,7 @@ export default {
         'node:click': ({ node }) => {
           window.console.log(this.data["nodes"][node]["name"]);
           this.node_name = this.data["nodes"][node]["name"];
-          this.displayGraph=true;
+          this.displayGraph.value = true;
         },
       }
     }
@@ -69,10 +77,16 @@ export default {
       let request = new XMLHttpRequest();
       request.open("GET", this.url, false);
       request.send();
-      let jsonResult = JSON.parse(request.responseText);
-      this.data["nodes"] = reactive(jsonResult["nodes"]);
-      this.data["edges"] = reactive(jsonResult["edges"]);
-      this.data["layouts"] = reactive(jsonResult["layouts"])
+      try {
+        let jsonResult = JSON.parse(request.responseText);
+        this.data["nodes"] = jsonResult["nodes"];
+        this.data["edges"] = jsonResult["edges"]; 
+        this.isValid = true;
+      } catch (error) {
+        this.isValid = false;
+      }
+      
+      
     },
   }
 }
@@ -80,17 +94,29 @@ export default {
 </script>
 
 <template>
+  <div v-if="isValid" id="graph_part">
   <div class="demo-control-panel">
-    <div v-if="displayGraph">{{this.node_name}}</div>
+    <ModalGraph :node_name="this.node_name"></ModalGraph>
     <label for="scaleObj">Scaling Objects:</label><input type="checkbox" v-model="config.view.scalingObjects" name="scaleObj"> |
     <label for="forceEnabled">Automatic Node Positioning:</label><input type="checkbox" v-model="d3ForceEnabled" name="forceEnabled">
   </div>
   <v-network-graph class="graph" :event-handlers="click_event" :nodes="data['nodes']" :edges="data['edges']" :layouts="data['layouts']" v-model:zoom-level="zoomLevel" :configs="config"></v-network-graph>
+  </div>
+  <div v-else id="error_occured">Connectez au moins un capteur !</div>
 </template>
 
 <style scoped>
+#graph_part{
+  height: 100%;
+}
 .graph {
   width: 100%;
-  height: 90%;
+  height: 100%;
+}
+#error_occured{
+  padding-top: 50px;
+  color: red;
+  text-align: center;
+  font-size: 1.5em;
 }
 </style>

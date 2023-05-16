@@ -251,6 +251,7 @@ export default defineComponent({
   position: relative;
 
   &__button {
+
     background-color: #fff;
     border: 0;
     border-radius: 0.25rem;

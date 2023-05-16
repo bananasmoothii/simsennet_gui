@@ -11,7 +11,7 @@ export default {
 </script>
 
 <template>
-    <button :style="'--clr:'+this.color" v-on:click="this.func"><span>{{ this.text }}</span><i></i></button>
+    <button :style="'--clr:'+this.color" v-on:click.stop="this.func"><span>{{ this.text }}</span><i></i></button>
 </template>
 
 <style lang="scss" scoped>
@@ -23,13 +23,14 @@ export default {
         text-transform: uppercase;
         border: none;
         letter-spacing: 0.1rem;
-        padding: 1rem 3rem;
+        padding: 10px 4%;
         transition: 0.2s;
         width: 250px;
+        height: 40px;
     }
     button:hover {
         letter-spacing: 0.2rem;
-        padding: 1.1rem 3.1rem;
+        padding: 11px 4.1%;
         background: var(--clr);
         color: var(--clr);
         animation: box 3s infinite;

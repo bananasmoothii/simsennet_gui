@@ -25,7 +25,7 @@ import Gestion from "@/components/Gestion.vue";
 export default class Main extends Vue {}
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 #header{
   grid-area: header;
   border-bottom:black 1px solid ;
