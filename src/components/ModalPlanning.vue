@@ -18,7 +18,28 @@ export default {
         this.provideDisplayPlanning.value = true
     },
     submit: function(){
-        return 0
+        const dict = {"add":[]};
+        const url = "http://ssngwtd.loria.fr/sendTasks.php"
+        const length = this.frequency_planning.length;
+
+        let date = new Date(this.planning_date_string[0][0]);
+        dict["add"].push({"initTime": date.toISOString(), "freq":this.frequency_planning[0]});
+
+
+        for(let i = 1; i <length; i++){
+            if(this.planning_date_string[i-1][1] != "" &&  this.frequency_planning[i] != ""){
+                let date = new Date(this.planning_date_string[i-1][1])
+                dict["add"].push({"initTime": date.toISOString(), "freq":this.frequency_planning[i]});
+            }
+        }
+        date = new Date(this.planning_date_string[length-1][1]);
+        dict["add"].push({"initTime": date.toISOString(), "freq":0});
+
+        let request = new XMLHttpRequest();
+        request.open("POST", url, false);
+        request.send("?json="+encodeURIComponent(JSON.stringify(dict)));
+        console.log(request.responseText)
+        
     },
     changed: function(){
         this.isChanging = false;
@@ -26,38 +47,42 @@ export default {
     updateTime: function(){
         if(this.isChanging != true){
             const today = new Date();
-            const time_chosen = new Date(this.planning_date_string[0][0])
+            const time_chosen = new Date(this.planning_date_string[0][1])
             if (today.getTime() > time_chosen.getTime()){
                 this.planning_date = today;
-                this.planning_date_string[0][0] = this.planning_date.toString();
+                this.planning_date_string[0][1] = this.planning_date.toString();
             }
             else{
-                this.planning_date_string[0][0] = time_chosen.toString();
+                this.planning_date_string[0][1] = time_chosen.toString();
             }
-            console.log(this.planning_date_string[0][0]);
         }   
     },
     opened: function(){
         this.isChanging = true; 
     },
     add: function(){
-        const today = new Date(); 
+        const last_index = this.planning_date_string.length
         this.planning_date_string.push(["", ""]);
-        this.items.push("");
-        console.log(this.items);
+        this.frequency_planning.push(0)
     },
+    delete_item: function(i){   
+        this.planning_date_string.splice(i,1);
+    }
   },
   data(){
     return {
         planning_date: new Date(),
         planning_date_string: reactive([]),
+        frequency_planning: reactive([]),
         isChanging: false,
-        items: [],
+    
     }
   },
+  beforeMount() {
+    this.planning_date_string.push([this.planning_date.toString(), ""]);
+  },
   mounted() {
-        this.add();
-        setInterval(this.updateTime, 1000);
+        setInterval(this.updateTime, 500);
   },
   components:{
     VueNumberInput,
@@ -80,19 +105,23 @@ export default {
                     <span class="start">Heure de départ</span>
                     <span class="freq">Fréquence</span>
                     <span class="end">Heure de fin</span>
+                    <span class="remove"></span>
                 </div>
-                <div class="line" v-for="(item,index) in items" :key="item">
-                    <span class="start" v-if="index === 0"><VueDatePicker class="timepicker" v-model="planning_date_string[0][0]" :clearable="false" :min-date="new Date()" prevent-min-max-navigation  disable-year-select enable-seconds @update:model-value="changed" @open="opened"></VueDatePicker></span>
-                    <span class="start" v-else><VueDatePicker class="timepicker" v-model="planning_date_string[index][0]" :clearable="false"  prevent-min-max-navigation  disable-year-select enable-seconds ></VueDatePicker></span>
-                    <span class="freq"><vue-number-input class="input" :placeholder="'Fréquence'" :min="0" :max="Infinity" :rounded="true" inline controls></vue-number-input></span>
-                    <span class="end"  v-if="index === Object.keys(items).length - 1">Jamais</span>
-                    <span class="end" v-else><VueDatePicker class="timepicker" v-model="planning_date_string[index][1]" :clearable="false" prevent-min-max-navigation  disable-year-select enable-seconds></VueDatePicker></span>
+                <div class="line" v-for="i in planning_date_string.length" :key="i">
+                    <span class="start" v-if="i-1 === 0"><VueDatePicker class="timepicker" v-model="planning_date_string[0][0]" :clearable="false" :min-date="new Date()" prevent-min-max-navigation  disable-year-select @update:model-value="changed" @open="opened"></VueDatePicker></span>
+                    <span class="start" v-else><VueDatePicker class="timepicker" v-model="planning_date_string[i-2][1]" :min-date="planning_date_string[i-2][1]" :clearable="false" prevent-min-max-navigation  disable-year-select></VueDatePicker></span>
+                    <span class="freq"><vue-number-input v-model="frequency_planning[i-1]" class="input" :placeholder="'Fréquence'" :min="0" :max="Infinity" :rounded="true" inline controls></vue-number-input></span>
+                    <span class="end" v-if="i-1 === 0"><VueDatePicker class="timepicker" v-model="planning_date_string[i-1][1]" :min-date="planning_date_string[0][0]" :clearable="false" prevent-min-max-navigation  disable-year-select></VueDatePicker></span>
+                    <span class="end" v-else><VueDatePicker class="timepicker" v-model="planning_date_string[i-1][1]" :min-date="planning_date_string[i-2][1]" :clearable="false" prevent-min-max-navigation  disable-year-select></VueDatePicker></span>
+                    <span class="remove" v-if="i-1 != 0"><img class="remove_img" src="@/assets/delete.png" v-on:click="delete_item(i-1)"></span>
+                    <span class="remove" v-else></span>
                 </div>
 
                 <div class="line">
                     <span class="start"></span>
                     <span class="freq"><Button id="add" :color="'#8dba8a'" :func="add" :text="'Ajouter'"></Button></span>
                     <span class="end"></span>
+                    <span class="remove"></span>
                 </div>  
             </div>  
             <div id="footer">
@@ -103,7 +132,7 @@ export default {
     </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 #add{
     width: 50%;
 }
@@ -127,7 +156,7 @@ export default {
     align-self: center;
     margin: auto;
     height: 100%;
-    width: 33%;
+    width: 30%;
 }
 .input{
     margin: 5px;   
@@ -136,13 +165,30 @@ export default {
     align-self: baseline;
     margin: auto;
     height: 100%;
-    width: 33%;
+    width: 30%;
 }
 .end{
     margin: auto;
     height: 100%;
-    width: 33%;
+    width: 30%;
 }
+.remove{
+    width: 10%;
+    height: 100%;
+}
+.remove_img{
+    height: 25px;
+    width: auto;
+    object-fit: cover;
+    border-radius: 10px;
+    padding: 5px;
+    margin-top: 8px;
+}
+.remove_img:hover{
+    background-color: rgba($color: #000000, $alpha: 0.1);
+    cursor: pointer;
+}
+
 #background {
     position: absolute;
     top:0;

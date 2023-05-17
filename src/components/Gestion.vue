@@ -48,26 +48,28 @@ export default {
           request.open("GET", this.global_freq, false);
           request.send();
           this.freq = parseInt(request.responseText);
-          console.log(this.freq)
+        },
+        check_status: function(){
+          if(this.freq === 0){
+            this.isRunning=false;
+          }
+          else{
+            this.isRunning=true;
+          }
         }
   },
   computed: {
     label_button:{
       get(){
-        return this.isRunning ? "Reprendre": "Pause";
+        return this.isRunning ? "Pause": "Reprendre";
       }
     }
   },
   mounted(){
-    this.get_global_freq();
+    setInterval(this.get_global_freq, 1000);
+    setInterval(this.check_status, 1000);
 
-    if(this.freq === 0){
-      this.isRunning=false;
-    }
-    else{
-      this.isRunning=true;
-    }
-
+    
   },
   components:{
     VueNumberInput,
