@@ -1,28 +1,28 @@
 <template>
   <div id="main-page">
-    <div id="header"><Header></Header></div>
-    <div id="topo"><SimsennetGraph></SimsennetGraph></div>
-    <div id="option"><Gestion></Gestion></div>
-    <div id="footer"><Footer></Footer></div>
+    <div id="header"><Header/></div>
+    <div id="topo"><SimsennetGraph/></div>
+    <div id="option"><Gestion/></div>
+    <div id="footer"><Footer/></div>
   </div>
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import SimsennetGraph  from "@/components/SimsennetGraph.vue";
+import SimsennetGraph from "@/components/SimsennetGraph.vue";
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
 import Gestion from "@/components/Gestion.vue";
+import {defineComponent} from "vue";
 
-@Options({
+export default defineComponent({
+  name: 'MainView',
   components: {
     SimsennetGraph,
     Header,
     Footer,
-    Gestion,
-  },
-})
-export default class Main extends Vue {}
+    Gestion
+  }
+});
 </script>
 
 <style lang="scss" scoped>
